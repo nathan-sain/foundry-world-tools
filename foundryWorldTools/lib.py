@@ -26,11 +26,16 @@ class FWT_Config(UserDict):
         with open(self.config_file,"w") as cf:
             json.dump(self.data,cf)
     def create_config(self,file_name):
-        if not path.exists(file_name):
-            temp_config_file = path.join(gettempdir(),"fwt.json")
-            renames(temp_config_file,file_name)
-            self.config_file = file_name
-        self.safe()
+        try:
+            if not path.exists(file_name):
+                    temp_config_file = path.join(gettempdir(),"fwt.json")
+                    self.config_file = temp_config_file
+                    self.save()
+                    renames(temp_config_file,file_name)
+                    self.config_file = file_name
+        except:
+            logging.warning(f"unable to create config file {sys.exc_info()[0]}")
+
         
 
 
