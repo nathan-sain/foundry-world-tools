@@ -1,12 +1,12 @@
 import json, filecmp, time, pprint, glob, re, logging, itertools, sys, shutil
 import jmespath
-from os import path,listdir,walk,rename,renames,stat,chown
+from os import path,listdir,walk,rename,renames,stat,chown,makedirs
 from shutil import copy
 from collections import UserDict
 from tempfile import gettempdir
 
 
-fvtt_sys_re = re.compile(r'^(?P<root_sys>.*?)(?P<fvtt_sys>(worlds|modules|systems)/.*)$')
+fvtt_sys_re = re.compile(r'.*Data/')
 
 class genericobject:
     def __getitem__(self,i):
@@ -70,7 +70,8 @@ class FWT_FileManager:
             raise ValueError(f"Directory {base_dir} does not appear to be a FVTT world directory")
         self.world_dir = path.abspath(base_dir)
         self.dir_exclusions = []
-        self.fvtt_data_dir = fvtt_sys_re.match(self.world_dir).group("root_sys")
+        self.fvtt_data_dir = findFvttRoot(self.world_dir)+"/Data"
+        pprint.pprint(self.fvtt_data_dir)
         self.trash_dir = path.join(self.world_dir,"Trash")
         self.add_dir_exclusion(self.trash_dir)
         self.add_dir_exclusion(path.join(self.world_dir,"data"))
@@ -105,7 +106,9 @@ class FWT_FileManager:
             np = f.get_new_path()
             if np:
                 rewrite_queue.update({f.get_path():np})
-        rewrite_rel_paths = {get_fvtt_sys_path(k):get_fvtt_sys_path(v) for (k,v) in rewrite_queue.items()}
+        rewrite_rel_paths = {k.replace(self.fvtt_data_dir+'/',''):v.replace(self.fvtt_data_dir+'/','')
+                             for (k,v) in rewrite_queue.items()}
+        pprint.pprint(rewrite_rel_paths)
         self.rewrite_queue = rewrite_rel_paths
     def get_rewrite_queue(self):
             return self.rewrite_queue
@@ -116,6 +119,8 @@ class FWT_FileManager:
     def process_file_queue(self):
         """do file renames and deletions"""   
         for f in self.files:
+            if f.get_new_path() and f.keep_src:
+                f.copy()
             if f.get_new_path():
                 f.rename()
             if f.get_trash_path():
@@ -144,23 +149,39 @@ class FWT_File:
         self.new_path = ""
         self.locked = False
         self.trash_path = ""
+        self.keep_src = False
     def rename(self):
-        if self.new_path:
+        if self.new_path and not self.keep_src:
             if not path.exists(self.new_path):
                 logging.debug(f"Renaming {self.path} -> {self.new_path}")
                 renames(self.path,self.new_path)
             else:
-                raise ValueError(f"Can't rename file {self.path}\nTartet {self.new_path} exists!")
+                raise ValueError(f"Can't rename file {self.path}\nTarget {self.new_path} exists!")
             self.old_path = self.path
             self.path = self.new_path
             self.new_path = ""
             logging.debug(f"rename:completed rename of {self.old_path} -> {self.path}")
             return True
         return False 
+    def copy(self):
+        if self.new_path:
+            if not path.exists(self.new_path):
+                makedirs(path.dirname(self.new_path), exist_ok=True)
+                logging.debug(f"Copying {self.path} -> {self.new_path}")
+                shutil.copy2(self.path,self.new_path)
+            else:
+               raise ValueError(f"Can't copy file {self.path}\nTarget {self.new_path} exists!")
+               self.copy_of = self.path
+               self.path = self.new_path
+               self.new_path = ""
+               logging.debug(f"copy:completed copy of {self.copy_of} -> {self.path}")
+            return True
     def set_trash_path(self,trash_path):
         if trash_path:
             self.trash_path = trash_path
         return True
+    def set_keep_src(self):
+        self.keep_src=True
     def trash(self):
         self.new_path = self.trash_path
         return self.rename()
@@ -204,8 +225,7 @@ class FWT_SetManager(FWT_FileManager):
             self.detect_dup_byname=byname
             return True
         else:
-            raise ValueError("Logic error")
-            
+            raise ValueError("Logic error")    
     def load_preset(self,preset_obj):
         allowed = {"detect_dup_bycontent","preferred_patterns","detect_dup_byname","file_extensions","dir_exclusions","rewrite_names_pattern"}
         found_keys = allowed.intersection(set(preset_obj.keys()))
@@ -255,6 +275,7 @@ class FWT_SetManager(FWT_FileManager):
         for dup in self.fwtsets:
             fwt_dup_queue.update(dup.get_rewrite_data())
         fixed_fwt_paths = {get_fvtt_sys_path(k):get_fvtt_sys_path(v) for (k,v) in fwt_dup_queue.items()}
+        pprint.pprint(fixed_fwt_paths)
         self.rewrite_queue = fixed_fwt_paths
     def add_set(self,files):
         fwtset = FWT_Set(self,files=files)
@@ -457,9 +478,9 @@ def get_files(worldpath,extensions=None,excludes=None,bycontent=False,byname=Fal
     return {'types':types,'files':files, 'dups':dups, 'numfiles':numfiles, 'numskipped':numskipped, 'time':time.time()-t0} 
 
 def get_fvtt_sys_path(file_path):
-    fspm = fvtt_sys_re.match(file_path)
-    if fspm: return fspm.group("fvtt_sys")
-    return False
+    fspm = fvtt_sys_re.sub('',file_path)
+    if fspm: return fspm
+    raise ValueError("unable to determine fvtt system path")
 
 def find_list_dups(c):
         '''sort/tee/izip'''
@@ -474,9 +495,26 @@ def find_list_dups(c):
 
 def findWorldRoot(dir):
     if dir == '/': return False
-    elif path.isfile(dir) or not 'world.json' in listdir(dir): 
+    try:
+        pisd = path.isfile(dir)
+        file_list = listdir(dir)
+    except:
+        return findWorldRoot(path.dirname(dir))
+    if pisd or not 'world.json' in file_list: 
         return findWorldRoot(path.dirname(dir))
     return dir
+
+def findFvttRoot(dir):
+    if dir == '/': return False
+    try:
+        pisd = path.isfile(dir)
+        file_set = set(listdir(dir))
+    except:
+        return findWorldRoot(path.dirname(dir))    
+    if pisd or not {'Data','Config'}.issubset(file_set): 
+        return findFvttRoot(path.dirname(dir))
+    return dir
+
 
 def cpSecPerm(src,target):
     st = stat(src)

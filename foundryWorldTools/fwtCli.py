@@ -132,13 +132,18 @@ def replace(ctx,src,targets):
 @cli.command()
 @click.argument('src',type=click.Path(exists=True,file_okay=True,resolve_path=True))
 @click.argument('target',type=click.Path(exists=False,resolve_path=True))
+@click.option('--keep-src',is_flag=True,help='keep source file',default=False)
 @click.pass_context
-def rename(ctx,src,target):
+def rename(ctx,src,target,keep_src):
     """Rename a file and update the world databases"""
-    world_dir = lib.findWorldRoot(src)
+    world_dir = lib.findWorldRoot(src) or lib.findWorldRoot(target)
+    if not world_dir:
+        click.abort("Unable to determine the root directory of the fvtt world")
     fm = lib.FWT_FileManager(world_dir)
     file = fm.add_file(src)
     file.set_new_path(target)
+    if keep_src:
+        file.set_keep_src()
     fm.generate_rewrite_queue()
     fm.process_rewrite_queue()
     fm.process_file_queue()
