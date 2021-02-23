@@ -108,7 +108,6 @@ class FWT_FileManager:
                 rewrite_queue.update({f.get_path():np})
         rewrite_rel_paths = {k.replace(self.fvtt_data_dir+'/',''):v.replace(self.fvtt_data_dir+'/','')
                              for (k,v) in rewrite_queue.items()}
-        pprint.pprint(rewrite_rel_paths)
         self.rewrite_queue = rewrite_rel_paths
     def get_rewrite_queue(self):
             return self.rewrite_queue
@@ -275,12 +274,10 @@ class FWT_SetManager(FWT_FileManager):
         for dup in self.fwtsets:
             fwt_dup_queue.update(dup.get_rewrite_data())
         fixed_fwt_paths = {get_fvtt_sys_path(k):get_fvtt_sys_path(v) for (k,v) in fwt_dup_queue.items()}
-        pprint.pprint(fixed_fwt_paths)
         self.rewrite_queue = fixed_fwt_paths
     def add_set(self,files):
         fwtset = FWT_Set(self,files=files)
         self.fwtsets.append(fwtset) 
-
 
    
 class FWT_Set:
