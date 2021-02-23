@@ -385,7 +385,7 @@ def unique_filename(output_filename):
     while path.exists(f'{output_filename}{str(n)[1:]}'):
         if isinstance(n, str): n = -0.1
         n += 0.1
-    return f'{output_filename}{str(n)[1:]}'   
+    return f'{output_filename}{str(n)[1:3]}'   
 
 def obj_lookup_generator(lookup_obj, lookup_val, lookup_key="_id"):
     if isinstance(lookup_obj, dict):
