@@ -6,7 +6,7 @@ To make it easier to do repetitive tasks using the dedup and renameall commands 
 
 fwt --help and fwt CMD --help will give brief usage information for the CLI and supported commands.
 
-Install using pip `python3 -m pip git+https://github.com/nathan-sain/foundry-world-tools.git`
+Install using pip `python3 -m pip install git+https://github.com/nathan-sain/foundry-world-tools.git`
 
 ## Currently the CLI supports the following commands
 
@@ -22,26 +22,29 @@ Install using pip `python3 -m pip git+https://github.com/nathan-sain/foundry-wor
 
 * **replace:** replace one file with another. The file to be replaced, the target, is moved to a trash directory and the source file is moved to the path of the target.
 
-# Complete Example (Linux / BSD / WSL with bash shell)
+# Complete Example (Linux / BSD / WSL with bash shell / Windows)
 This example shows how to remove duplicate PNG files, replace all PNG images with WEBP images using the cwebp command, and then remove undesirable characters from the remaining files. The adventure1 world has many duplicate images. Some of the duplicates are stored in a folder called images/misc and it is preferred for images to be stored in the characters, journal, and scenes directories.
 
 ```
-# fwt dedup --bycontent --ext ".png" --ext ".PNG" --preferred="<world_dir>/characters.*token.*" --preferred="<world_dir>/characters" --preferred="<world_dir>/journal" --preferred="<world_dir>/scenes" /fvtt/Data/worlds/adventure1 
+# python3 -m foundryWorldTools dedup --bycontent --ext ".png" --ext ".PNG" --preferred="<world_dir>/characters.*token.*" --preferred="<world_dir>/characters" --preferred="<world_dir>/journal" --preferred="<world_dir>/scenes" /fvtt/Data/worlds/adventure1 
 # echo "Load the adventure in Foundry and check to make sure everything loads properly then delete Trash and backups"
 # rm -rf /fvtt/Data/worlds/adventure1/Trash
 # rm /fvtt/Data/worlds/adventure1/data/*bak
 # rm /fvtt/Data/worlds/adventure1/packs/*bak
 # echo "if files remain in the images/misc directory copy the individual files from images/misc to other preferred directories and rerun dedup"
-# fwt dedup --bycontent --ext ".png" --ext ".PNG" --preferred="<world_dir>/characters.*token.*" --preferred="<world_dir>/characters" --preferred="<world_dir>/journal" --preferred="<world_dir>/scenes" /fvtt/Data/worlds/adventure1
+# python3 -m foundryWorldTools dedup --bycontent --ext ".png" --ext ".PNG" --preferred="<world_dir>/characters.*token.*" --preferred="<world_dir>/characters" --preferred="<world_dir>/journal" --preferred="<world_dir>/scenes" /fvtt/Data/worlds/adventure1
 # echo "Replace all png files with webp files"
-# for file in $(find /fvtt/Data/worlds/adventure1 -iname '*png'); do cwebp -mt -q 95 "$file" -o "${file%*png}webp";done
-# fwt dedup --ext=".png" --ext=".PNG" --ext=".webp" --byname --preferred=".*webp" /fvtt/Data/worlds/adventure1
+# On Unix
+# for file in $(find /fvtt/Data/worlds/adventure1 -iname '*png'); do cwebp -preset drawing -sharp_yuv -mt -psnr 45 "$file" -o "${file%*png}webp";done
+# On Windows
+# gci \fvtt\Data\worlds\adventure1 -R -include *.png | Foreach-Object { c:\bin\cwebp -preset drawing -sharp_yuv -mt -psnr 45 -o "$($_.FullName.split('.')[0]).webp" $_.FullName }
+# python3 -m foundryWorldTools dedup --ext=".png" --ext=".PNG" --ext=".webp" --byname --preferred=".*webp" /fvtt/Data/worlds/adventure1
 # echo "Load the adventure in Foundry and check to make sure everything loads properly then delete Trash and backups"
 # rm -rf /fvtt/Data/worlds/adventure1/Trash
 # rm /fvtt/Data/worlds/adventure1/data/*bak
 # rm /fvtt/Data/worlds/adventure1/packs/*bak
 # echo "Remove undesirable characters from files"
-# fwt renameall --remove="([\[\] '])|(__)|[0-9]{3}" /fvtt/Data/worlds/adventure
+# python3 -m foundryWorldTools renameall --remove="([\[\] '])|(__)|[0-9]{3}_-_" /fvtt/Data/worlds/adventure
 echo "Load the adventure in Foundry and check to make sure everything loads properly then delete Trash and backups"
 # rm /fvtt/Data/worlds/adventure1/data/*bak
 # rm /fvtt/Data/worlds/adventure1/packs/*bak

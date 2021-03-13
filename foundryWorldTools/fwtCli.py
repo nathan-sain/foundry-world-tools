@@ -19,18 +19,20 @@ def cli(ctx,debug,showpresets,preset,config,edit):
         click.echo('Debug mode is on')
     config_data = lib.FWT_Config()
     if not config:
-        config = lib.path.join(click.get_app_dir('foundryWorldTools'),"config.json")
+        config_dir = click.get_app_dir('foundryWorldTools')
+        config = lib.path.join(config_dir,"config.json")
         lib.logging.debug(f"No config file provided. Attempting to load config from {config}")
-        if not lib.path.exists(config): config_data.create_config(config)
+        if not lib.path.exists(config): 
+            config_data.create_config(config)
     if config:
         config_data.load(config)
     ctx.obj['CONFIG'] = config_data
     ctx.obj['CONFIG_LOADED'] = True
     ctx.obj['CONFIG_PATH'] = config
     if edit:
+        click.echo(f'Opening file {config} for editing')
         click.edit(filename=config)
-
-    if preset:
+    elif preset:
         if ctx.obj['CONFIG_LOADED']:
             presets = ctx.obj['CONFIG'].get("presets",{})
         try: 
@@ -81,8 +83,8 @@ def dedup(ctx,world_dir,ext,preferred,byname,bycontent):
     dup_manager.scan()
     dup_manager.set_preferred_on_all()
     dup_manager.generate_rewrite_queue()
-    dup_manager.process_rewrite_queue()
     dup_manager.process_file_queue()
+    dup_manager.process_rewrite_queue()
 
 @cli.command()
 @click.option('--ext',help='files with this extension will be checked.May be used multiple times.',multiple=True)
@@ -106,44 +108,51 @@ def renameall(ctx,dir,ext,remove):
     file_manager.scan()
     file_manager.renameall()
     file_manager.generate_rewrite_queue()
-    file_manager.process_rewrite_queue()
     try:
         file_manager.process_file_queue()
     except ValueError as e:
         click.echo(f"Unable to rename file:\n{e}")
+    file_manager.process_rewrite_queue()
 
 
 @cli.command()
 @click.argument('targets',type=click.Path(exists=True,file_okay=True,resolve_path=True))
 @click.argument('src',type=click.Path(exists=True,file_okay=True,resolve_path=True))
+@click.option('--world-dir',help='set the world directory where the database files are',
+               type=click.Path(exists=True,resolve_path=True,file_okay=False))
 @click.pass_context
-def replace(ctx,src,targets):
+def replace(ctx,src,targets,world_dir):
     """Replace one file with another and update the world databases"""
-    world_dir = lib.findWorldRoot(src)
+    world_dir = lib.findWorldRoot(world_dir) or lib.findWorldRoot(src) or lib.findWorldRoot(target)
     sm = lib.FWT_SetManager(world_dir)
     sm.add_set([src,targets])
     sm.add_preferred_pattern(src)
     sm.set_preferred_on_all()
     sm.generate_rewrite_queue()
-    sm.process_rewrite_queue()
     sm.process_file_queue()
+    sm.process_rewrite_queue()
 
 
 @cli.command()
 @click.argument('src',type=click.Path(exists=True,file_okay=True,resolve_path=True))
 @click.argument('target',type=click.Path(exists=False,resolve_path=True))
 @click.option('--keep-src',is_flag=True,help='keep source file',default=False)
+@click.option('--world-dir',help='set the world directory where the database files are',
+               type=click.Path(exists=True,resolve_path=True,file_okay=False))
 @click.pass_context
-def rename(ctx,src,target,keep_src):
+def rename(ctx,src,target,keep_src,world_dir):
     """Rename a file and update the world databases"""
-    world_dir = lib.findWorldRoot(src) or lib.findWorldRoot(target)
+    world_dir = (world_dir and lib.findWorldRoot(world_dir)) or lib.findWorldRoot(src) or lib.findWorldRoot(target) 
     if not world_dir:
         click.abort("Unable to determine the root directory of the fvtt world")
     fm = lib.FWT_FileManager(world_dir)
-    file = fm.add_file(src)
-    file.set_new_path(target)
-    if keep_src:
-        file.set_keep_src()
-    fm.generate_rewrite_queue()
-    fm.process_rewrite_queue()
-    fm.process_file_queue()
+    if src == world_dir:
+        fm.rename_world(target,keep_src)
+    else:
+        fm_source = fm.add_file(src)
+        fm_source.set_new_path(target)
+        if keep_src:
+            fm_source.set_keep_src()
+        fm.generate_rewrite_queue()
+        fm.process_file_queue()
+        fm.process_rewrite_queue()
