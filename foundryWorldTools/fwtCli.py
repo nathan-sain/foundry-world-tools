@@ -134,7 +134,7 @@ def replace(ctx,src,targets,world_dir):
 
 
 @cli.command()
-@click.argument('src',type=click.Path(exists=True,file_okay=True,resolve_path=True))
+@click.argument('src',type=click.Path(exists=True,file_okay=True,resolve_path=False))
 @click.argument('target',type=click.Path(exists=False,resolve_path=True))
 @click.option('--keep-src',is_flag=True,help='keep source file',default=False)
 @click.option('--world-dir',help='set the world directory where the database files are',

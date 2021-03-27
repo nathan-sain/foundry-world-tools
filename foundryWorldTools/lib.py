@@ -42,9 +42,9 @@ class NotNeDB:
     def __init__(self,data_file):
         self.data_file = data_file
         self.data = []
-        logging.debug(f"begin loading NotNeDB file {self.data_file}")
+        logging.info(f"begin loading NotNeDB file {self.data_file}")
         self.load()
-        logging.debug(f"finished loading NotNeDB file {self.data_file}")
+        logging.info(f"finished loading NotNeDB file {self.data_file}")
     def load(self):
         with open(self.data_file,'r') as f:
             self.data = [json.loads(x) for x in f.readlines()]
@@ -63,15 +63,17 @@ class NotNeDB:
 class FWT_FileManager:
     """An object for dealing with files and updating foundry db when file paths change"""
     def __init__(self,base_dir,file_extensions=[]):
-        if not path.exists(path.join(base_dir,"world.json")):
-            raise ValueError(f"Directory {base_dir} does not appear to be a FVTT world directory")
-        self.world_dir = path.abspath(base_dir)
+        base_dir = path.abspath(base_dir)
+        files_in_base_dir = listdir(base_dir)
+        if not 'world.json' in files_in_base_dir and not 'module.json' in files_in_base_dir:
+            raise ValueError(f"Directory {base_dir} does not appear to be a FVTT project directory")
+        self.project_dir = path.abspath(base_dir)
         self.dir_exclusions = []
-        self.fvtt_data_dir = path.join(findFvttRoot(self.world_dir),"Data")
-        self.trash_dir = path.join(self.world_dir,"Trash")
+        self.fvtt_data_dir = path.join(findFvttRoot(self.project_dir),"Data")
+        self.trash_dir = path.join(self.project_dir,"Trash")
         self.add_dir_exclusion(self.trash_dir)
-        self.add_dir_exclusion(path.join(self.world_dir,"data"))
-        self.add_dir_exclusion(path.join(self.world_dir,"packs"))
+        self.add_dir_exclusion(path.join(self.project_dir,"data"))
+        self.add_dir_exclusion(path.join(self.project_dir,"packs"))
         self.file_extensions = file_extensions
         self.files = []
         self.rewrite_names_pattern = None
@@ -83,7 +85,7 @@ class FWT_FileManager:
             self.file_extensions.append(ext)
     def scan(self):
         self.file_data = get_files(
-                    self.world_dir,
+                    self.project_dir,
                     extensions=self.file_extensions,
                     excludes=self.dir_exclusions
                     )
@@ -112,8 +114,8 @@ class FWT_FileManager:
             return self.rewrite_queue
     def process_rewrite_queue(self):
         if(len(self.rewrite_queue)):
-            replace_value_in_db(path.join(self.world_dir,"data"),batch=self.rewrite_queue)
-            replace_value_in_db(path.join(self.world_dir,"packs"),batch=self.rewrite_queue)
+            replace_value_in_db(path.join(self.project_dir,"data"),batch=self.rewrite_queue)
+            replace_value_in_db(path.join(self.project_dir,"packs"),batch=self.rewrite_queue)
     def process_file_queue(self):
         """do file renames and deletions"""
         for f in self.files:
@@ -125,8 +127,8 @@ class FWT_FileManager:
                 f.trash()
     def pprint(self):
         pprint.pprint(self.files)
-    def get_world_dir(self):
-        return self.world_dir
+    def get_project_dir(self):
+        return self.project_dir
     def add_rewrite_names_pattern(self,pattern):
         self.rewrite_names_pattern = pattern
     def load_preset(self,preset_obj):
@@ -140,22 +142,24 @@ class FWT_FileManager:
         self.files.append(file)
         return file
     def rename_world(self,dst,keep_src=False):
+        dst = path.abspath(dst)
         if not dst.startswith(self.fvtt_data_dir):
             raise ValueError("moving out of foundry data directory not supported")
-        world_name = path.basename(self.world_dir)
+        world_name = path.basename(self.project_dir)
         dst_name = path.basename(dst)
-        rel_world_dir = self.world_dir.replace(self.fvtt_data_dir,"").replace('\\','/')
-        rel_world_dir = re.sub('^/','',rel_world_dir)
+        rel_project_dir = self.project_dir.replace(self.fvtt_data_dir,"").replace('\\','/')
+        rel_project_dir = re.sub('^/','',rel_project_dir)
         rel_dst_dir = dst.replace(self.fvtt_data_dir,"").replace('\\','/')
         rel_dst_dir = re.sub('^/','',rel_dst_dir)
         if keep_src:
-            copytree(self.world_dir,dst)
+            copytree(self.project_dir,dst)
         else:
-            renames(self.world_dir,dst)
-        self.world_dir = dst
-        world_json = path.join(self.world_dir,"world.json")
-        replace_string_in_files([world_json],find=rel_world_dir,replace=rel_dst_dir)
+            renames(self.project_dir,dst)
+        self.project_dir = dst
+        world_json = path.join(self.project_dir,"world.json")
+        replace_string_in_files([world_json],find=rel_project_dir,replace=rel_dst_dir)
         replace_string_in_files([world_json],find=world_name,replace=dst_name,quote_replace=True)
+        replace_string_in_db(f"{dst}/**/*.db",find=rel_project_dir,replace=rel_dst_dir)
     
 
 
@@ -251,7 +255,7 @@ class FWT_SetManager(FWT_FileManager):
         return True
     def scan(self):
         self.dup_data = get_files(
-                    self.world_dir,
+                    self.project_dir,
                     byname=self.detect_dup_byname,
                     bycontent=self.detect_dup_bycontent,
                     extensions=self.file_extensions,
@@ -277,7 +281,7 @@ class FWT_SetManager(FWT_FileManager):
     def set_preferred_on_all(self):
         for dup in self.fwtsets:
             for pref in self.preferred_patterns:
-                pref = pref.replace('<world_dir>',re.escape(self.world_dir))
+                pref = pref.replace('<project_dir>',re.escape(self.project_dir))
                 if dup.set_preferred(search=pref):
                     logging.debug(f"set_preferred_on_all: set prefered file to {dup.get_preferred().get_path()} using pattern {pref}")
                     break
@@ -350,7 +354,7 @@ class FWT_Set:
         self.files.remove(p)
         self.preferred = p
         for file in self.files: 
-            file.set_trash_path(file.get_path().replace(self.parent.get_world_dir(),self.parent.trash_dir))
+            file.set_trash_path(file.get_path().replace(self.parent.get_project_dir(),self.parent.trash_dir))
         return True
     def reset_preferred(self):
         if self.preferred:
@@ -369,7 +373,7 @@ class FWT_Set:
             if preferred:
                 return self.set_preferred(i=self.files.index(file))
             elif self.preferred:
-                return file.set_trash_path(file.get_path().replace(self.parent.get_world_dir(),self.parent.trash_dir))
+                return file.set_trash_path(file.get_path().replace(self.parent.get_project_dir(),self.parent.trash_dir))
             return True
     def get_preferred(self):
         return self.preferred
@@ -388,9 +392,11 @@ def replace_string_in_db(db_files_path,find=None,replace=None,batch={},quote_rep
 
 
 def replace_string_in_files(file_paths,find=None,replace=None,batch={},quote_replace=False):
-    logging.debug(f"replace_string_in_files: there are {len(batch)} items in the batch")
     if find and replace: batch[find] = replace
     lines_changed = 0
+    logging.info(f"replace_string_in_files: there are {len(batch)} items in the batch")
+    logging.debug(pprint.pformat(batch))
+    if len(batch) == 0: raise ValueError("No valid search / replace pairs identified")
     for df_path in file_paths:
         tf_path = unique_filename(df_path+".tmp")
         logging.debug(f"replace_string_in_files: reading from file {df_path}")
