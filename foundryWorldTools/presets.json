@@ -1,0 +1,49 @@
+{
+    "presets": {
+        "fixr20": {
+            "command": "renameall",
+            "description": "Rename files. Remove non alpha characters and convert to lower case",
+            "lower": true,
+            "remove": [
+                "^[0-9]{3}_-_"
+            ],
+            "replace": [
+                 "/_-_/_/",
+                "/^_//",
+                "/^\\./_./",
+                "/_+/-/"
+            ]
+        },
+        "imgDedup": {
+            "bycontent": true,
+            "command": "dedup",
+            "description": "Find duplicate image files and chooses files from the characters,journal,scenes directories to keep",
+            "ext": [
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".gif",
+                ".webp"
+            ],
+            "preferred": [
+                "<project_dir>/characters.*token.*",
+                "<project_dir>/characters",
+                "<project_dir>/journal",
+                "<project_dir>/scenes/backgrounds",
+                "<project_dir>/scenes"
+            ]
+        },
+        "replacePng": {
+            "command": "dedup",
+            "description": "looks for png files that share the same name with webp files and only keeps the webp files",
+            "detect_dup_byname": true,
+            "file_extensions": [
+                ".png",
+                ".webp"
+            ],
+            "preferred_patterns": [
+                ".*webp"
+            ]
+        }
+    }
+}
