@@ -11,5 +11,8 @@ setup(
     install_requires=[
         'Click',
         'jsonlines',
-    ]
+    ],
+    entry_points = {
+        'console_scripts': ['fwt=foundryWorldTools.fwtCli:cli'],
+    }
 )
