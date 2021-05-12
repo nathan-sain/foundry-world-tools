@@ -46,7 +46,7 @@ def cli(ctx,loglevel,logfile,datadir,showpresets,preset,config,edit,mkconfig):
 
     logging.info(f"Attempting to load config from {config_file}")
     try:
-        config_data = lib.FWTConfig(config_file,mkconfig=mkconfig)
+        config_data = lib.FWTConfig(config_file,mkconfig=mkconfig,dataDir=datadir)
     except lib.FWTConfigNoDataDir:
         ctx.fail("Foundry dataDir not specified and unable to "
                  "automatically determine the location. Set --dataDir" 
