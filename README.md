@@ -62,6 +62,10 @@ fwt doesn't delete any files. When file paths are removed from the the database 
     * Example 2: Using content duplicate detection with the option `--bycontent` files "scenes/token1.png" "characters/goblin_token.png" "journal/token5.png" are determined to be duplicates. Without the --preferred option the first in the order of detection is considered the preferred asset and all others will be moved to a trash directory. If duplicates in the characters directory are preferred then the option --preferred="characters/.*" will cause the "characters/goblin_token.png" file to kept and "scenes/token1.png" and "journal/token5.png" to be moved to the trash directory.
     
          `fwt --bycontent --prefered="characters/.*" /fvtt/Data/worlds/myadventure`
+    
+    * Example 3: Using a preset called imgDedup and excluding all directories named sides from being scanned
+
+         `fwt --preset=imgDedup dedup --exclude-dir=sides myadventure`
 
 * **rename:** rename a asset in the database and move / copy the asset. This works on file assets and world directories.
     * Example: You accidentally uploaded a tile to the root of your FVTT user data directory  and you want it to be in tiles directory of the world of your current working directory. 
@@ -82,12 +86,12 @@ fwt doesn't delete any files. When file paths are removed from the the database 
 
         `fwt renameall --lower adventure`
 
-* **download** A command to gather image locations and determine if the images are hosted remotely. In the case that images are remotely hosted they are downloaded to the local project directory. The download location is determined by inspecting the other image locations of the object. If any of them are local then the remote file is downloaded to the same directory as existing images. If all images are remote then a default directory is choose by object type. **currently only actors are checked for remote assets**
+* **download:** A command to gather image locations and determine if the images are hosted remotely. In the case that images are remotely hosted they are downloaded to the local project directory. The download location is determined by inspecting the other image locations of the object. If any of them are local then the remote file is downloaded to the same directory as existing images. If all images are remote then a default directory is choose by object type. **currently only actors are checked for remote assets**
     * Example: You have actors which contain links to remote assets in their biography HTML.
 
         `fwt download worlds/lmop`
 
-* **pull** A command to copy all assets stored in directories outside of the project directory. If a project has file paths to a shared asset directory or a project has file paths to a module this command can be used to copy all of the files into the project directory. Allow the project to be copied to another server without depending on existence of the external assets. 
+* **pull:** A command to copy all assets stored in directories outside of the project directory. If a project has file paths to a shared asset directory or a project has file paths to a module this command can be used to copy all of the files into the project directory. Allow the project to be copied to another server without depending on existence of the external assets. 
     * Example: You have scene backgrounds stored in a content module and you want to copy them into your project directory
 
         `fwt pull --from=/Data/modules/madmaps --to=/Data/worlds/darkest-hour`

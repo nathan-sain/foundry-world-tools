@@ -1,5 +1,5 @@
 import click
-from foundryWorldTools import lib
+from . import lib
 logging = lib.logging
 
 @click.group(invoke_without_command=True)
@@ -105,9 +105,11 @@ def cli(ctx,loglevel,logfile,datadir,showpresets,preset,config,edit,mkconfig):
     help='method for finding duplicates')
 @click.option('--bycontent',is_flag=True,default=False,
     help='method for finding duplicates')
+@click.option('--exclude-dir',multiple=True,
+    help="Directory name or path to exclude. May be used multiple times.")
 @click.argument('dir',type=click.Path(exists=True,file_okay=False))
 @click.pass_context
-def dedup(ctx,dir,ext,preferred,byname,bycontent):
+def dedup(ctx,dir,ext,preferred,byname,bycontent,exclude_dir):
     """Scans for duplicate files, removes duplicates and updates fvtt's databases.
     
     DIR should be a directory containing a world.json file"""
@@ -119,6 +121,9 @@ def dedup(ctx,dir,ext,preferred,byname,bycontent):
         byname = preset.get('byname',byname)
         bycontent = preset.get('bycontent',bycontent)
         ext += tuple(preset.get('ext',[]))
+        exclude_dir += tuple(preset.get('exclude-dir',[]))
+    for dir in exclude_dir:
+        dup_manager.add_exclude_dir(dir)
     no_method = not byname and not bycontent
     both_methods = byname and bycontent
     if no_method or both_methods:

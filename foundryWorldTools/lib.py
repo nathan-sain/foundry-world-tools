@@ -282,6 +282,9 @@ class FWTFileManager:
             with FWTFileWriter(self.project_dir.manafest,trash_dir=self.trash_dir) as f:
                 f.write(json.dumps(temp_manafest))
             return temp_manafest
+            
+    def add_exclude_dir(self,dir):
+        self._dir_exclusions.add(dir)
 
     def scan(self):
         scanner = FWTScan(self.project_dir)
@@ -352,7 +355,11 @@ class FWTFileManager:
         return file
 
     def db_replace(self,batch,quote_find=False):
-        self.files_replace(self.project_dir.glob("*/*db"),batch,quote_find)
+        self.files_replace(
+                            (self.project_dir.manafest,
+                            *self.project_dir.glob("*/*db")),
+                            batch,quote_find
+                        )
 
     def files_replace(self,files,batch,quote_find=False):
         for file in files:
