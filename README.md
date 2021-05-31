@@ -6,7 +6,7 @@ A Python CLI for working with Foundry VTT project assets on the file system. FWT
 
 # Installation
 
-Install using pip `python3 -m pip install git+https://github.com/nathan-sain/foundry-world-tools.git`
+Install using pip `python3 -m pip install git+https://github.com/nathan-sain/foundry-world-tools.git` or if FWT is already installed use `python3 -m pip install -U git+https://github.com/nathan-sain/foundry-world-tools.git` to upgrade to the latest version.
 
 On windows the cli command isn't installed in a directory that is in the binary path. In this case you have three options:
 
