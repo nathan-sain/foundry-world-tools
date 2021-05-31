@@ -37,13 +37,16 @@ def cli(ctx,loglevel,logfile,datadir,showpresets,preset,config,edit,mkconfig):
             logging.getLogger('').addHandler(consoleHandler)   
         else:
             logging.basicConfig(level=loglevel)
-    
+    logging.debug(f"started cli with options {lib.json.dumps(ctx.params)}")
     if config:
         config_file = lib.Path(config)
     elif not config:
         config_dir = click.get_app_dir('foundryWorldTools')
         config_file = lib.Path(config_dir) / "config.json"
-
+    if edit:
+        click.echo(f'Opening file {config_file} for editing')
+        click.edit(filename=config_file)
+        ctx.exit()
     logging.info(f"Attempting to load config from {config_file}")
     try:
         config_data = lib.FWTConfig(config_file,mkconfig=mkconfig,dataDir=datadir)
@@ -55,10 +58,6 @@ def cli(ctx,loglevel,logfile,datadir,showpresets,preset,config,edit,mkconfig):
         if config:
             ctx.fail("Config file not found. Use --mkconfig to create it")
         config_data = {}
-    if edit:
-        click.echo(f'Opening file {config_file} for editing')
-        click.edit(filename=config_file)
-        ctx.exit()
     if config_data.get("error",False):
         ctx.fail(f'Error loading config: {config_data["error"]}')
     ctx.obj['CONFIG'] = config_data
@@ -113,6 +112,7 @@ def dedup(ctx,dir,ext,preferred,byname,bycontent,exclude_dir):
     """Scans for duplicate files, removes duplicates and updates fvtt's databases.
     
     DIR should be a directory containing a world.json file"""
+    logging.debug(f"dedup started with options {lib.json.dumps(ctx.params)}")
     dir = lib.FWTPath(dir)
     dup_manager = lib.FWTSetManager(dir)
     preset = ctx.obj.get('PRESET',None)
@@ -156,6 +156,7 @@ def renameall(ctx,dir,ext,remove,replace,lower):
     """Scans files, renames based on a pattern and updates the world databases.
     
     DIR should be a directory containing a world.json file"""
+    logging.debug(f"renameall started with options {lib.json.dumps(ctx.params)}")
     dir = lib.FWTPath(dir)
     file_manager = lib.FWTFileManager(dir)
     preset = ctx.obj.get('PRESET',None)
@@ -185,6 +186,7 @@ def renameall(ctx,dir,ext,remove,replace,lower):
 @click.pass_context
 def rename(ctx,src,target,keep_src):
     """Rename a file and update the project databases"""
+    logging.debug(f"rename started with options {lib.json.dumps(ctx.params)}")
     src = lib.FWTPath(src)
     target = lib.FWTPath(target,exists=False)
  
@@ -219,6 +221,7 @@ def rename(ctx,src,target,keep_src):
     help='Database type. Currently only supports actors')
 def download(ctx,dir,type):
     """Download linked assets to the project directory"""
+    logging.debug(f"download started with options {lib.json.dumps(ctx.params)}")
     project_dir = lib.FWTPath(dir,require_project=True)
     dbs = lib.FWTProjectDb(project_dir,driver=lib.FWTNeDB)
     downloader = lib.FWTAssetDownloader(project_dir)
@@ -232,6 +235,7 @@ def download(ctx,dir,type):
 @click.option('--from','_from',type=click.Path(exists=True))
 @click.option('--to',type=click.Path(exists=True))
 def pull(ctx,_from,to):
+    logging.debug(f"pull command started with options {lib.json.dumps(ctx.params)}")
     """Pull assets from external projects"""
     if not _from:
         ctx.fail("Missing required option --from")
@@ -247,6 +251,7 @@ def pull(ctx,_from,to):
 @click.pass_context
 @click.argument('dir',type=click.Path(exists=True))
 def info(ctx,dir):
+    logging.debug(f"info command started with options {lib.json.dumps(ctx.params)}")
     project = lib.FWTPath(dir)
     o = []
     o.append(f"Project: {'yes' if project.is_project else 'no'}")

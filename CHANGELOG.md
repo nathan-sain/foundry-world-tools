@@ -1,11 +1,11 @@
-# Feb 22, 2021 - Inital release
+# Feb 22, 2021 - Initial release
 
 FoundryWorldTools first release. Only works on Unix
 
 # Mar 13, 2021
 
 * Refactored to work on Windows computers
-  * Updated complete example to include seperate commands for Windows
+  * Updated complete example to include separate commands for Windows
 * Added ability to rename / copy world directories
 
 # April 26, 2021
@@ -25,6 +25,14 @@ been added.
 
 # May 26
 
-* BUG FIX: Also update paths in the project's manafest JSON file
+* BUG FIX: Also update paths in the project's manifest JSON file
 * BUG FIX: Properly handle --dataDir option
-* FEATURE: Added --exclude-dir option on dedupe command
+* FEATURE: Added --exclude-dir option on dedup command
+
+# May 31
+
+* BUG FIX: added routines to process dedup by file name. They were left out of the April rewrite
+* BUG FIX: moved --edit option processing earlier in the cli processor to allow editing the config
+  file before attempting to determine the location of the Foundry User Data Directory.
+* Added additional debug statements
+* Increase the version number to 0.3

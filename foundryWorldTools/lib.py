@@ -20,6 +20,7 @@ from types import SimpleNamespace
 from contextlib import AbstractContextManager
 from pathlib import Path as _Path_, _windows_flavour, _posix_flavour
 
+__version__ = '0.3'
 LOG_LEVELS = ["ERROR","INFO","WARNING","DEBUG"]
 
 def find_list_dups(c):
@@ -162,8 +163,8 @@ class FWTConfig(UserDict):
             self.config_file = config_file
         if self.config_file.exists():
             if self.config_file.stat().st_size > 1:
-                logging.debug(f"Config Data is {self.config_file.read_text()}")
                 self.load()
+                logging.debug(f"Loaded Config File. Config Data are: \n{json.dumps(self.data, indent=4, sort_keys=True)}")
             else:
                 self.create_config()
         elif mkconfig:
@@ -450,11 +451,16 @@ class FWTSetManager(FWTFileManager):
             for d in self._dir_exclusions: dir_filter.add_match(d)
             scanner.add_filter(dir_filter) 
         for match in scanner:
-            with match.open('rb') as f:
-                id = hash(f.read(4096))
-                if id == 0: continue # empty file
-            while not self.add_to_set(id,match):
-                id += 1
+            if self._detect_method == "bycontent":
+                with match.open('rb') as f:
+                    id = hash(f.read(4096))
+                    if id == 0: continue # empty file
+                while not self.add_to_set(id,match):
+                    id += 1
+            elif self._detect_method == "byname":
+                id = (match.parent / match.stem).as_posix()
+                self.add_to_set(id,match)
+
         single_sets = [k for k,v in self.sets.items() if len(v) < 2]
         for k in single_sets:
             del self.sets[k]
@@ -463,7 +469,14 @@ class FWTSetManager(FWTFileManager):
         set = self.sets.get(id,FWTSet(id,trash_dir=self.trash_dir))
         if not set.files:
             self.sets[id] = set
-        return set.add_file(f)
+            return set.add_file(f)
+        elif (self._detect_method == "bycontent" and
+              filecmp.cmp(f.path, set._files[0].path,shallow=False)):
+            return set.add_file(f)
+        elif self._detect_method == "byname":
+            return set.add_file(f)
+        else:
+            return False
 
 
     def process_file_queue(self):
@@ -751,15 +764,8 @@ class FWTSet:
 
     def add_file(self,path,preferred=False):
         file = FWTFile(path,trash_dir=self.trash_dir)
-        if file in self._files:
-            return True
-        if self._files and filecmp.cmp(file.path,
-                            self._files[0].path,shallow=False):
+        if not file in self._files:
             self._files.append(file)
-        elif not self._files:
-            self._files.append(file)
-        else:
-            return False
         if preferred:
             self.preferred = file
         return True
