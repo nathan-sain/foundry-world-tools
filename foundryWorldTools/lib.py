@@ -20,7 +20,7 @@ from types import SimpleNamespace
 from contextlib import AbstractContextManager
 from pathlib import Path as _Path_, _windows_flavour, _posix_flavour
 
-__version__ = '0.3'
+__version__ = '0.3.1'
 LOG_LEVELS = ["ERROR","INFO","WARNING","DEBUG"]
 
 def find_list_dups(c):
@@ -471,7 +471,7 @@ class FWTSetManager(FWTFileManager):
             self.sets[id] = set
             return set.add_file(f)
         elif (self._detect_method == "bycontent" and
-              filecmp.cmp(f.path, set._files[0].path,shallow=False)):
+              filecmp.cmp(f, set._files[0].path,shallow=False)):
             return set.add_file(f)
         elif self._detect_method == "byname":
             return set.add_file(f)

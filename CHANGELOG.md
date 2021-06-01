@@ -36,3 +36,5 @@ been added.
   file before attempting to determine the location of the Foundry User Data Directory.
 * Added additional debug statements
 * Increase the version number to 0.3
+* BUG FIX unable to use dedup --bycontent
+* Increase the version number to 0.3.1
