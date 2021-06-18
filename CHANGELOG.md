@@ -38,3 +38,7 @@ been added.
 * Increase the version number to 0.3
 * BUG FIX unable to use dedup --bycontent
 * Increase the version number to 0.3.1
+
+# June 18
+
+* Added two nedb utilities: nedb2yaml and yaml2nedb

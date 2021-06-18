@@ -146,6 +146,24 @@ fwt renameall --remove="[0-9]{3}_-_" --replace="/_+/-/" --lower worlds/adventure
 
 ```
 
+# Git diff utilities
+
+**nedb2yaml**  
+With git configured to use nedb2yaml it is possible to view human readable diffs of nedb files presented in YAML format. Add the following git config snippets to configure git diff to use nedb2yaml.
+
+`.git/config`
+```
+[diff "nedb"]
+        textconv = python3 -m foundryWorldTools.nedb2yaml
+        cachetextconv = true
+```
+`.gitattributes`
+```
+*.db diff=nedb
+```
+
+**yaml2nedb**  
+It is also possible to convert nedb files to yaml with nedb2yaml make edits and then convert them back to nedb with the utility yaml2nedb. 
 # Contribution
 
 If you notice a bug or would like to request a feature please the open an issue. Better yet fork the repository and make a pull request!
