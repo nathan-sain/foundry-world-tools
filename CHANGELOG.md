@@ -42,3 +42,4 @@ been added.
 # June 18
 
 * Added two nedb utilities: nedb2yaml and yaml2nedb
+* Increase the version number to 0.4.0
