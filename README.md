@@ -162,6 +162,8 @@ With git configured to use nedb2yaml it is possible to view human readable diffs
 *.db diff=nedb
 ```
 
+**Note for Windows OS:** If python is installed through the windows store git may not have permission to execute python. Also python3 may not be in your path so you may need to use py instead of python3.
+
 **yaml2nedb**  
 It is also possible to convert nedb files to yaml with nedb2yaml make edits and then convert them back to nedb with the utility yaml2nedb. 
 # Contribution
