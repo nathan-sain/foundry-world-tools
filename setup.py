@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='foundryWorldTools',
-    version='0.4.0',
+    version='0.4.1',
     packages=['foundryWorldTools'],
     package_data = {
         'foundryWorldTools': ['*.json']
@@ -11,6 +11,7 @@ setup(
     install_requires=[
         'Click',
         'jsonlines',
+        'pyyaml',
     ],
     entry_points = {
         'console_scripts': ['fwt=foundryWorldTools.fwtCli:cli'],
