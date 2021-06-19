@@ -148,8 +148,9 @@ fwt renameall --remove="[0-9]{3}_-_" --replace="/_+/-/" --lower worlds/adventure
 
 # Git diff utilities
 
-**nedb2yaml**  
-With git configured to use nedb2yaml it is possible to view human readable diffs of nedb files presented in YAML format. Add the following git config snippets to configure git diff to use nedb2yaml.
+## nedb2yaml
+
+With git configured to use nedb2yaml as a textconv filter it is possible to view human readable diffs of nedb files presented in YAML format. Add the following git config snippets to configure git diff to use nedb2yaml.
 
 `.git/config`
 ```
@@ -164,8 +165,26 @@ With git configured to use nedb2yaml it is possible to view human readable diffs
 
 **Note for Windows OS:** If python is installed through the windows store git may not have permission to execute python. Also python3 may not be in your path so you may need to use py instead of python3.
 
-**yaml2nedb**  
+## yaml2nedb
+
 It is also possible to convert nedb files to yaml with nedb2yaml make edits and then convert them back to nedb with the utility yaml2nedb. 
+
+
+## __Examples__:
+
+**view a YAML formatted git diff**: [screenshot of VSCode diff and git diff](images/diff.png)
+
+    git diff HEAD^:./data/actors.db :./data/actors.db
+
+
+
+Create a YAML version of a Foundry db
+
+    python3 -m foundryWorldTools.nedb2yaml data/actors.db > actors.yaml
+
+Create a Foundry db from a YAML file
+
+    python3 -m foundryWorldTools.yaml2nedb actors.yaml > actors.db
 # Contribution
 
 If you notice a bug or would like to request a feature please the open an issue. Better yet fork the repository and make a pull request!
