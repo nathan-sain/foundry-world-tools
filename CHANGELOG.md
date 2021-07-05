@@ -43,3 +43,7 @@ been added.
 
 * Added two nedb utilities: nedb2yaml and yaml2nedb
 * Increase the version number to 0.4.0
+
+# July 5
+
+* Changed download command. Actor's images are called avatar and token now. Added an option to specify the base asset directory for downloaded images. Images will be stored in <world-dir>/<asset-dir>/<actor-name>/{avatar,token} now.

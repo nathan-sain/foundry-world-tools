@@ -20,7 +20,7 @@ from types import SimpleNamespace
 from contextlib import AbstractContextManager
 from pathlib import Path as _Path_, _windows_flavour, _posix_flavour
 
-__version__ = '0.3.1'
+__version__ = '0.4.2'
 LOG_LEVELS = ["ERROR","INFO","WARNING","DEBUG"]
 
 def find_list_dups(c):
@@ -327,10 +327,10 @@ class FWTFileManager:
                 rewrite_queue.update({f.path.as_rtp():f.new_path.as_rtp()})
         self.rewrite_queue = rewrite_queue
 
-    def process_rewrite_queue(self):
+    def process_rewrite_queue(self,quote_find=True):
         """do db rewrites"""
         if(len(self.rewrite_queue)):
-            self.db_replace(batch=self.rewrite_queue,quote_find=True)
+            self.db_replace(batch=self.rewrite_queue,quote_find=quote_find)
 
     def process_file_queue(self):
         """do file renames and deletions"""
@@ -1141,7 +1141,7 @@ class FWTAssetDownloader:
             logging.debug(f"Found actor imgage URL match: {actor_name} - {actor_img}")
             if not character_dir:
                 character_dir = Path(asset_dir) / self.formatFilename(actor_name)
-            filename = self.formatFilename(f"{actor_name}-img.{img_match.group('ext')}")
+            filename = self.formatFilename(f"avatar.{img_match.group('ext')}")
             target_path = FWTPath(self.project_dir / character_dir / filename,exists=False)
             target_path.parent.mkdir(parents=True,exist_ok=True)
             self.downloadUrl(actor_img,target_path)
@@ -1152,7 +1152,7 @@ class FWTAssetDownloader:
                 raise FileNotFoundError(f"Downloaded file {target_path} was not found")
         
         if token_match:
-            filename = self.formatFilename(f"{actor_name}-token-img.{token_match.group('ext')}")
+            filename = self.formatFilename(f"token.{token_match.group('ext')}")
             target_path = FWTPath(self.project_dir / character_dir / filename,exists=False)
             target_path.parent.mkdir(parents=True,exist_ok=True)
             self.downloadUrl(token_img,target_path)

@@ -217,18 +217,26 @@ def rename(ctx,src,target,keep_src):
 @cli.command()
 @click.pass_context
 @click.argument('dir',type=click.Path(exists=True))
-@click.option('--type',default='actors',
+@click.option('--type',
     help='Database type. Currently only supports actors')
-def download(ctx,dir,type):
+@click.option('--asset-dir',
+    help='Directory in the world root to store images')
+def download(ctx,dir,type,asset_dir):
     """Download linked assets to the project directory"""
     logging.debug(f"download started with options {lib.json.dumps(ctx.params)}")
+    if not type:
+        ctx.fail("Missing required option --type")
+    if not asset_dir:
+        ctx.fail("Missing required option --asset_dir")
     project_dir = lib.FWTPath(dir,require_project=True)
     dbs = lib.FWTProjectDb(project_dir,driver=lib.FWTNeDB)
     downloader = lib.FWTAssetDownloader(project_dir)
     if type == 'actors':
         for actor in dbs.data.actors:
-            downloader.download_actor_images(actor)
+            downloader.download_actor_images(actor,asset_dir)
         dbs.data.actors.save()
+    else:
+        ctx.fail("--type only allows 'actors'")
 
 @cli.command()
 @click.pass_context

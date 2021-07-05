@@ -86,10 +86,10 @@ fwt doesn't delete any files. When file paths are removed from the the database 
 
         `fwt renameall --lower adventure`
 
-* **download:** A command to gather image locations and determine if the images are hosted remotely. In the case that images are remotely hosted they are downloaded to the local project directory. The download location is determined by inspecting the other image locations of the object. If any of them are local then the remote file is downloaded to the same directory as existing images. If all images are remote then a default directory is choose by object type. **currently only actors are checked for remote assets**
-    * Example: You have actors which contain links to remote assets in their biography HTML.
+* **download:** A command to gather image locations and determine if the images are hosted remotely. In the case that images are remotely hosted they are downloaded to the local project directory. The download location is determined by inspecting the other image locations of the object. If any of them are local then the remote file is downloaded to the same directory as existing images. If all images are remote then the option --asset-dir is referenced and a directory by that name in the project root is used. Both --type and --asset-dir are required options. **currently the only type option supported is actors**
+    * Example: You have actors which contain links to remote assets in their biography HTML and you want downloads for new actor images to be in <world-dir>/actors:
 
-        `fwt download worlds/lmop`
+        `fwt download --type=actors --asset-dir=actors worlds/lmop`
 
 * **pull:** A command to copy all assets stored in directories outside of the project directory. If a project has file paths to a shared asset directory or a project has file paths to a module this command can be used to copy all of the files into the project directory. Allow the project to be copied to another server without depending on existence of the external assets. 
     * Example: You have scene backgrounds stored in a content module and you want to copy them into your project directory
