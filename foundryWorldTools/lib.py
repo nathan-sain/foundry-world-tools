@@ -945,14 +945,10 @@ class FWTFileWriter(AbstractContextManager):
             do_overwrite = trash_path.exists() and self._trash_overwrite
             if do_overwrite or not trash_path.exists():
                 try:
-                    self._dest_path.rename(trash_path)
-                except OSError as err:
-                    if err.errno == errno.EXDEV:
-                        shutil.copystat(self._dest_path,trash_path)
-                        self._dest_path.unlink()
-                    else:
-                        self._temp_path.unlink()
-                        raise err
+                    self._dest_path.replace(trash_path)
+                except Exception as err:
+                    self._temp_path.unlink()
+                    raise err
         self._temp_path.rename(self._dest_path)
 
     def __enter__(self):

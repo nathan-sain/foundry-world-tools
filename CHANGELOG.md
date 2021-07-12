@@ -47,3 +47,7 @@ been added.
 # July 5
 
 * Changed download command. Actor's images are called avatar and token now. Added an option to specify the base asset directory for downloaded images. Images will be stored in <world-dir>/<asset-dir>/<actor-name>/{avatar,token} now.
+
+# July 11
+
+* fixed a bug in rename function. On Windows the Python pathlib rename method refuses to overwrite files. Updated rename function to use the pathlib replace when overwrite of files is requested.
