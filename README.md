@@ -101,13 +101,13 @@ This example shows how to remove duplicate PNG files, replace all PNG images wit
 
 ```sh
 ### Dedup by content to find extra files
-fwt dedup --bycontent --ext ".png" --preferred="<world_dir>/characters.*token.*" --preferred="<world_dir>/characters" --preferred="<world_dir>/journal" --preferred="<world_dir>/scenes" /fvtt/Data/worlds/adventure1 
+fwt dedup --bycontent --ext ".png" --preferred="<project_dir>/characters.*token.*" --preferred="<project_dir>/characters" --preferred="<project_dir>/journal" --preferred="<project_dir>/scenes" /fvtt/Data/worlds/adventure1 
 
 # Load the adventure in Foundry and check to make sure everything loads properly then delete Trash and backups
 rm -rf /fvtt/Data/worlds/adventure1/trash
 
 # if files remain in the images/misc directory copy the individual files from images/misc to other preferred directories and rerun dedup
-fwt dedup --bycontent --ext ".png" --preferred="<world_dir>/characters.*token.*" --preferred="<project_dir>/characters" --preferred="<project_dir>/journal" --preferred="<project_dir>/scenes" /fvtt/Data/worlds/adventure1
+fwt dedup --bycontent --ext ".png" --preferred="<project_dir>/characters.*token.*" --preferred="<project_dir>/characters" --preferred="<project_dir>/journal" --preferred="<project_dir>/scenes" /fvtt/Data/worlds/adventure1
 # repeat testing and detete Trash and backups...
 ```
 
