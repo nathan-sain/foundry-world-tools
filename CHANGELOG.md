@@ -54,4 +54,5 @@ been added.
 
 # Sept. 7
 
-* fixed a bug affecting the download command. If an actor object img or token.img property was null the download job failed. An error is now logged and the job will complete.
+* Fixed a bug affecting the download command. If an actor object img or token.img property was null the download job failed. An error is now logged and the job will complete.
+* Added new download type items
