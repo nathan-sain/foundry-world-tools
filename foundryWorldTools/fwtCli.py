@@ -218,7 +218,7 @@ def rename(ctx,src,target,keep_src):
 @click.pass_context
 @click.argument('dir',type=click.Path(exists=True))
 @click.option('--type',
-    help='Database type. Currently only supports actors')
+    help='Database type. Currently supports actors and items')
 @click.option('--asset-dir',
     help='Directory in the world root to store images')
 def download(ctx,dir,type,asset_dir):
@@ -235,8 +235,12 @@ def download(ctx,dir,type,asset_dir):
         for actor in dbs.data.actors:
             downloader.download_actor_images(actor,asset_dir)
         dbs.data.actors.save()
+    if type == 'items':
+        for item in dbs.data.items:
+            downloader.download_item_images(item,asset_dir)
+        dbs.data.items.save()
     else:
-        ctx.fail("--type only allows 'actors'")
+        ctx.fail("--type only allows 'actors' or 'items'")
 
 @cli.command()
 @click.pass_context
