@@ -1111,6 +1111,53 @@ class FWTAssetDownloader:
         filename = re.sub(r'^\.','',filename)
         return(filename)
 
+    def download_item_images(self,item,asset_dir='items'):
+        item_name = item["name"]
+        item_img = item["img"]
+        item_desc = item["data"]["description"]["value"]
+        if not item_img:
+            logging.error(f"\nNo image set for {item_name}. Skipping \n")
+            return False
+        logging.debug(f"checking if item img, {item_img}, is a URL")
+        img_match = self.urlRe.match(item_img)
+        desc_match = self.urlRe.search(item_desc)
+        if not img_match:
+            try:
+                item_dir = Path(item_img).parent.relative_to(self.project_dir.to_rpd())
+            except ValueError:
+                pass
+        else:
+            logging.debug(f"Item image is a URL {item_img}")
+            item_dir = Path(asset_dir) / self.formatFilename(item_name)
+            filename = self.formatFilename(f"image.{img_match.group('ext')}")
+            target_path = FWTPath(self.project_dir / item_dir / filename,exists=False)
+            target_path.parent.mkdir(parents=True,exist_ok=True)
+            self.downloadUrl(item_img,target_path)
+            if target_path.exists():
+                item['img'] = target_path.as_rtp()
+                item_img = item['img']
+            else:
+                raise FileNotFoundError(f"Downloaded file {target_path} was not found")
+        if desc_match:
+            urls = set()
+            if not item_dir:
+                item_dir = Path(asset_dir) / self.formatFilename(item_name)
+            for match in self.urlRe.finditer(item_desc):
+                if match[0] in urls:
+                    continue
+                urls.add(match[0])
+                filename = self.formatFilename(f"{item_name}-desc-{len(urls)}.{match.group('ext')}")
+                target_path = FWTPath(self.project_dir / item_dir / filename,exists=False)
+                target_path.parent.mkdir(parents=True,exist_ok=True)
+                self.downloadUrl(match[0],target_path)
+                if target_path.exists():
+                    logging.debug(f"downloaded {match[0]} to {target_path}")
+                    item_desc = item_desc.replace(
+                        match[0],target_path.as_rtp())
+                else:
+                    raise FileNotFoundError(f"Downloaded file {target_path} was not found")   
+            item["data"]["description"]["value"] = item_desc
+
     def download_actor_images(self,actor,asset_dir='characters'):
         actor_img = actor["img"]
         token_img = actor["token"]["img"]
