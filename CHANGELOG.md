@@ -51,3 +51,7 @@ been added.
 # July 11
 
 * fixed a bug in rename function. On Windows the Python pathlib rename method refuses to overwrite files. Updated rename function to use the pathlib replace when overwrite of files is requested.
+
+# Sept. 7
+
+* fixed a bug affecting the download command. If an actor object img or token.img property was null the download job failed. An error is now logged and the job will complete.
