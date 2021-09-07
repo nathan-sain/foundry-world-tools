@@ -227,7 +227,7 @@ def download(ctx,dir,type,asset_dir):
     if not type:
         ctx.fail("Missing required option --type")
     if not asset_dir:
-        ctx.fail("Missing required option --asset_dir")
+        ctx.fail("Missing required option --asset-dir")
     project_dir = lib.FWTPath(dir,require_project=True)
     dbs = lib.FWTProjectDb(project_dir,driver=lib.FWTNeDB)
     downloader = lib.FWTAssetDownloader(project_dir)
