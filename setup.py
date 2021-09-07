@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='foundryWorldTools',
-    version='0.4.3',
+    version='0.4.4',
     packages=['foundryWorldTools'],
     package_data = {
         'foundryWorldTools': ['*.json']
