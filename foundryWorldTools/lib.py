@@ -1118,6 +1118,9 @@ class FWTAssetDownloader:
         actor_bio = actor['data']['details']['biography']['value']
         actor_name = actor["name"]
         character_dir = ""
+        if not actor_img or not token_img:
+            logging.error(f"\nNo image file for {actor_name}. Skipping\n")
+            return False
         logging.debug(f"checking {actor_img}")
         img_match = self.urlRe.match(actor_img) if actor_img else False
         logging.debug(f"checking {token_img}")
