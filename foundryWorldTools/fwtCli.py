@@ -235,7 +235,7 @@ def download(ctx,dir,type,asset_dir):
         for actor in dbs.data.actors:
             downloader.download_actor_images(actor,asset_dir)
         dbs.data.actors.save()
-    if type == 'items':
+    elif type == 'items':
         for item in dbs.data.items:
             downloader.download_item_images(item,asset_dir)
         dbs.data.items.save()
