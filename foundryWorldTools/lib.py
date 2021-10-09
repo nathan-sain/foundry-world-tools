@@ -636,7 +636,7 @@ class FWTFile:
                 logging.debug("rename:keep_src requested using copy instead")
                 return self.copy()
             if self.new_path.exists():
-                raise FWTPathError(f"Can't rename file {self.path}\n"
+                logging.error(f"Can't rename file {self.path}\n"
                                     f"Target {self.new_path} exists!")
             os.renames(self.path,self.new_path)
             self.old_path = self.path
@@ -1100,10 +1100,15 @@ class FWTAssetDownloader:
         logging.debug(f"downloading URL {url}")
         req = urllib.request.Request(
             url,method='GET',headers={'User-Agent':self.agent_string})
-        resp = urllib.request.urlopen(req)
-        if resp.status == 200:
-            with open(path, "wb") as f:
-                f.write(resp.read())
+        try:
+            resp = urllib.request.urlopen(req)
+        except urllib.error.HTTPError as e:
+            logging.error(f"Download error: {e} for URL {url}")
+        else:
+            if resp.status == 200:
+                with open(path, "wb") as f:
+                    f.write(resp.read())
+
 
     def formatFilename(self,name):
         filename = re.sub(r'[^A-Za-z0-9\-\ \.]','',name)
@@ -1195,7 +1200,7 @@ class FWTAssetDownloader:
                 actor['img'] = target_path.as_rtp()
                 actor_img = actor['img']
             else:
-                raise FileNotFoundError(f"Downloaded file {target_path} was not found")
+                logging.error(f"Downloaded file {target_path} was not found")
         
         if token_match:
             filename = self.formatFilename(f"token.{token_match.group('ext')}")
