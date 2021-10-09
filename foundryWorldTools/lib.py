@@ -327,7 +327,7 @@ class FWTFileManager:
                 rewrite_queue.update({f.path.as_rtp():f.new_path.as_rtp()})
         self.rewrite_queue = rewrite_queue
 
-    def process_rewrite_queue(self,quote_find=True):
+    def process_rewrite_queue(self,quote_find=False):
         """do db rewrites"""
         if(len(self.rewrite_queue)):
             self.db_replace(batch=self.rewrite_queue,quote_find=quote_find)
