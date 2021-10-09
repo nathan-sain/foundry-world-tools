@@ -20,7 +20,7 @@ from types import SimpleNamespace
 from contextlib import AbstractContextManager
 from pathlib import Path as _Path_, _windows_flavour, _posix_flavour
 
-__version__ = '0.4.6'
+__version__ = '0.4.7'
 LOG_LEVELS = ["ERROR","INFO","WARNING","DEBUG"]
 
 def find_list_dups(c):
