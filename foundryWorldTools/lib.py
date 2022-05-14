@@ -383,11 +383,12 @@ class FWTFileManager:
         src = FWTPath(src)
         remote_assets=set()
         dbs = FWTProjectDb(self.project_dir,driver=FWTTextDb)
-        path_re = re.compile(r'"img":"(?P<path>'+src.as_rpd()+'[^"]*)"')
+        path_re = re.compile(r'(?P<path>'+src.as_rpd()+r'[^"\\]+)')
         for db in dbs:
             for obj in db:
                 for a in path_re.findall(obj):
                     if a:
+                        logging.debug(f"find_remote_assets() found asset {a}")
                         remote_assets.add(a)
         self._files = [FWTFile(src._fwt_fud / path,keep_src=True) for path in remote_assets]
         for f in self._files:
