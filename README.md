@@ -1,5 +1,8 @@
 # Foundry World Tools (FWT)
 
+> [!WARNING]  
+> This utility is currently only compatable with Foundry 7,8,9
+
 A Python CLI for working with Foundry VTT project assets on the file system. FWT generally does two things when run; 1st it moves files and 2nd it updates the foundry databases with the new location of the file using a search and replace. In the case of duplicate files FWT does not delete files, only move them to a trash directory at the root of the world directory, if files are to be deleted that must be done manually. FWT makes a backup copy of any database files it rewrites using the original name with a .bak.X at the end. Regular expressions are used as patterns when preforming file renaming and preferred file matching. FWT was created to help me clean up adventure modules exported from other VTTs, and I hope it can help you.
 
 `fwt --help` and `fwt CMD --help` will give brief usage information for the CLI and supported commands.
