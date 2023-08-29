@@ -121,7 +121,10 @@ fwt dedup --bycontent --ext ".png" --preferred="<project_dir>/characters.*token.
 ```sh
 ### shell script to preform webp image conversion and then remove extra files with FWT
 ###### On Unix
-for file in $(find /fvtt/Data/worlds/adventure1 -iname '*png'); do cwebp -preset drawing -sharp_yuv -mt -psnr 45 "$file" -o "${file%*png}webp";done
+find /fvtt/Data/worlds/adventure1 -iname '*png' | while read file
+do
+  cwebp -preset drawing -sharp_yuv -mt -psnr 45 "$file" -o "${file%*png}webp"
+done
 ###### On Windows
 gci \fvtt\Data\worlds\adventure1 -R -include *.png | Foreach-Object { c:\bin\cwebp -preset drawing -sharp_yuv -mt -psnr 45 -o "$($_.FullName.split('.')[0]).webp" $_.FullName }
 # Dedup by name to remove the PNG files
